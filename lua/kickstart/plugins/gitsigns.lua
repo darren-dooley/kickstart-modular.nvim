@@ -24,6 +24,7 @@ return {
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      current_line_blame_formatter = '<author>, <author_time:%R> - <summary> - <abbrev_sha>',
       on_attach = function(bufnr)
         local gitsigns = require 'gitsigns'
 

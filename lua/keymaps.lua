@@ -8,6 +8,9 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Refresh vim
+vim.keymap.set('n', '<leader>rr', ':source ~/.config/nvim/init.lua<CR>', { desc = 'Reload nvim config' })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -30,6 +33,13 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- Window resizing (mimics tmux Ctrl-a h/j/k/l)
+--  Use CTRL+w then hjkl to resize windows
+vim.keymap.set('n', '<C-w>h', '<C-w>10<', { desc = 'Decrease window width' })
+vim.keymap.set('n', '<C-w>l', '<C-w>10>', { desc = 'Increase window width' })
+vim.keymap.set('n', '<C-w>j', '<C-w>10-', { desc = 'Decrease window height' })
+vim.keymap.set('n', '<C-w>k', '<C-w>10+', { desc = 'Increase window height' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })

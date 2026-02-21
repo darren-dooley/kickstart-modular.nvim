@@ -23,6 +23,8 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'mfussenegger/nvim-dap-python',
+    'mxsdev/nvim-dap-vscode-js',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -95,6 +97,8 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'debugpy',
+        'js-debug-adapter',
       },
     }
 
@@ -144,5 +148,53 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+
+    -- Python
+    require('dap-python').setup(vim.fn.stdpath 'data' .. '/mason/packages/debugpy/venv/bin/python')
+
+    -- JS / TS
+    require('dap-vscode-js').setup {
+      debugger_path = vim.fn.stdpath 'data' .. '/mason/packages/js-debug-adapter',
+      adapters = { 'pwa-node' },
+    }
+
+    local js_languages = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' }
+    for _, lang in ipairs(js_languages) do
+      dap.configurations[lang] = {
+        {
+          type = 'pwa-node',
+          request = 'launch',
+          name = 'Launch file',
+          program = '${file}',
+          cwd = '${workspaceFolder}',
+        },
+        {
+          type = 'pwa-node',
+          request = 'attach',
+          name = 'Attach',
+          processId = require('dap.utils').pick_process,
+          cwd = '${workspaceFolder}',
+        },
+        {
+          type = 'pwa-node',
+          request = 'launch',
+          name = 'Jest (current file)',
+          runtimeExecutable = 'node',
+          runtimeArgs = { '--experimental-vm-modules', '${workspaceFolder}/node_modules/.bin/jest', '--testPathPattern', '${file}', '--runInBand' },
+          rootPath = '${workspaceFolder}',
+          cwd = '${workspaceFolder}',
+          console = 'integratedTerminal',
+          internalConsoleOptions = 'neverOpen',
+        },
+      }
+    end
+
+    -- Load per-project .vscode/launch.json last so project configs
+    -- append to (not replace) the central ones above.
+    require('dap.ext.vscode').load_launchjs(nil, {
+      ['pwa-node'] = js_languages,
+      ['node'] = js_languages,
+      ['debugpy'] = { 'python' },
+    })
   end,
 }

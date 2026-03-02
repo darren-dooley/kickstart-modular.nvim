@@ -56,6 +56,7 @@ return {
         --  All the info you're looking for is in `:help telescope.setup()`
         --
         defaults = {
+          path_display = { filename_first = { reverse_directories = true } },
           --   mappings = {
           --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
           --   },

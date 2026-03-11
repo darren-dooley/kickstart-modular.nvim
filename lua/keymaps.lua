@@ -41,6 +41,10 @@ vim.keymap.set('n', '<C-w>l', '<C-w>10>', { desc = 'Increase window width' })
 vim.keymap.set('n', '<C-w>j', '<C-w>10-', { desc = 'Decrease window height' })
 vim.keymap.set('n', '<C-w>k', '<C-w>10+', { desc = 'Increase window height' })
 
+-- Buffer navigation
+vim.keymap.set('n', '<Tab>', ':bnext<CR>', { desc = 'Next buffer' })
+vim.keymap.set('n', '<S-Tab>', ':bprevious<CR>', { desc = 'Previous buffer' })
+
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })

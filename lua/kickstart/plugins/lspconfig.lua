@@ -96,6 +96,21 @@ return {
           --  For example, in C this would take you to the header.
           map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
+          -- Go to source definition (skips .d.ts, jumps to .js source)
+          map('grs', function()
+            local params = vim.lsp.util.make_position_params()
+            vim.lsp.buf_request(0, 'workspace/executeCommand', {
+              command = '_typescript.goToSourceDefinition',
+              arguments = { params.textDocument.uri, params.position },
+            }, function(_, result)
+              if result and #result > 0 then
+                vim.lsp.util.show_document(result[1], 'utf-8', { focus = true })
+              else
+                vim.notify('No source definition found', vim.log.levels.WARN)
+              end
+            end)
+          end, '[G]oto [S]ource Definition')
+
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
           map('gO', require('telescope.builtin').lsp_document_symbols, 'Open Document Symbols')

@@ -25,58 +25,65 @@ return {
     'leoluz/nvim-dap-go',
     'mfussenegger/nvim-dap-python',
     'mxsdev/nvim-dap-vscode-js',
+    'docker/nvim-dap-docker',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
     {
-      '<F5>',
+      '<leader>dc',
       function()
         require('dap').continue()
       end,
       desc = 'Debug: Start/Continue',
     },
     {
-      '<F1>',
+      '<leader>di',
       function()
         require('dap').step_into()
       end,
       desc = 'Debug: Step Into',
     },
     {
-      '<F2>',
+      '<leader>do',
       function()
         require('dap').step_over()
       end,
       desc = 'Debug: Step Over',
     },
     {
-      '<F3>',
+      '<leader>dO',
       function()
         require('dap').step_out()
       end,
       desc = 'Debug: Step Out',
     },
     {
-      '<leader>b',
+      '<leader>db',
       function()
         require('dap').toggle_breakpoint()
       end,
       desc = 'Debug: Toggle Breakpoint',
     },
     {
-      '<leader>B',
+      '<leader>dB',
       function()
         require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
       end,
       desc = 'Debug: Set Breakpoint',
     },
-    -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
     {
-      '<F7>',
+      '<leader>du',
       function()
         require('dapui').toggle()
       end,
-      desc = 'Debug: See last session result.',
+      desc = 'Debug: Toggle DAP UI',
+    },
+    {
+      '<leader>dx',
+      function()
+        require('dap').terminate()
+      end,
+      desc = 'Debug: Terminate',
     },
   },
   config = function()
@@ -151,6 +158,10 @@ return {
 
     -- Python
     require('dap-python').setup(vim.fn.stdpath 'data' .. '/mason/packages/debugpy/venv/bin/python')
+    -- Allow stepping into stdlib and third-party code
+    for _, config in ipairs(dap.configurations.python) do
+      config.justMyCode = false
+    end
 
     -- JS / TS
     require('dap-vscode-js').setup {
@@ -189,12 +200,7 @@ return {
       }
     end
 
-    -- Load per-project .vscode/launch.json last so project configs
-    -- append to (not replace) the central ones above.
-    require('dap.ext.vscode').load_launchjs(nil, {
-      ['pwa-node'] = js_languages,
-      ['node'] = js_languages,
-      ['debugpy'] = { 'python' },
-    })
+    -- Dockerfile debugging via Docker Buildx DAP
+    require('dap-docker').setup()
   end,
 }

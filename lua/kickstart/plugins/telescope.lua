@@ -70,6 +70,9 @@ return {
             '--smart-case',
             '--hidden',
           },
+          file_ignore_patterns = {
+            'yarn.lock',
+          },
         },
         pickers = {
           hidden = true,

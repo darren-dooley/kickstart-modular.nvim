@@ -24,7 +24,7 @@ return {
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
     'mfussenegger/nvim-dap-python',
-    'mxsdev/nvim-dap-vscode-js',
+    -- 'mxsdev/nvim-dap-vscode-js', -- replaced by direct dap adapter config (plugin is outdated)
     'docker/nvim-dap-docker',
   },
   keys = {
@@ -164,9 +164,15 @@ return {
     end
 
     -- JS / TS
-    require('dap-vscode-js').setup {
-      debugger_path = vim.fn.stdpath 'data' .. '/mason/packages/js-debug-adapter',
-      adapters = { 'pwa-node' },
+    local js_debug_path = vim.fn.stdpath 'data' .. '/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js'
+    dap.adapters['pwa-node'] = {
+      type = 'server',
+      host = 'localhost',
+      port = '${port}',
+      executable = {
+        command = 'node',
+        args = { js_debug_path, '${port}' },
+      },
     }
 
     local js_languages = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' }

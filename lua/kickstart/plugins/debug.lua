@@ -187,6 +187,15 @@ return {
         },
         {
           type = 'pwa-node',
+          request = 'launch',
+          name = 'Launch file (tsx)',
+          runtimeExecutable = '${workspaceFolder}/node_modules/.bin/tsx',
+          program = '${file}',
+          cwd = '${workspaceFolder}',
+          sourceMaps = true,
+        },
+        {
+          type = 'pwa-node',
           request = 'attach',
           name = 'Attach',
           processId = require('dap.utils').pick_process,

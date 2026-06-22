@@ -69,6 +69,13 @@ vim.o.inccommand = 'split'
 -- Show which line your cursor is on
 vim.o.cursorline = true
 
+-- Folding via treesitter (language-aware: folds functions/classes, not just indent).
+-- Files open fully expanded; use zM to collapse to def lines, zR to reopen.
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
 

@@ -193,6 +193,7 @@ return {
           program = '${file}',
           cwd = '${workspaceFolder}',
           sourceMaps = true,
+          envFile = '${workspaceFolder}/.env',
         },
         {
           type = 'pwa-node',

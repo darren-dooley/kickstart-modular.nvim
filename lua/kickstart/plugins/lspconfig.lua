@@ -219,6 +219,35 @@ return {
         capabilities = blink.get_lsp_capabilities(capabilities)
       end
 
+      -- Pyright's built-in markers miss uv/venv-only projects. With no root it runs in single-file
+      -- mode and cannot resolve sibling imports, so we search wider and then fall back to the
+      -- file's own directory.
+      local python_root_markers = {
+        { 'pyrightconfig.json', 'pyproject.toml', 'setup.py', 'setup.cfg' },
+        { 'requirements.txt', 'Pipfile', 'uv.lock' },
+        '.venv',
+        '.git',
+      }
+
+      -- The project's own venv wins over $VIRTUAL_ENV, so opening project B from project A's
+      -- activated shell still type-checks against B's dependencies.
+      local function resolve_python_path(root_dir)
+        local venvs = {}
+        if root_dir then
+          table.insert(venvs, root_dir .. '/.venv')
+        end
+        if vim.env.VIRTUAL_ENV then
+          table.insert(venvs, vim.env.VIRTUAL_ENV)
+        end
+        for _, venv in ipairs(venvs) do
+          local python = venv .. '/bin/python'
+          if vim.uv.fs_stat(python) then
+            return python
+          end
+        end
+        return vim.fn.exepath 'python3'
+      end
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -231,7 +260,18 @@ return {
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        pyright = {},
+        pyright = {
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            local fallback = fname ~= '' and vim.fs.dirname(fname) or vim.uv.cwd()
+            on_dir(vim.fs.root(bufnr, python_root_markers) or fallback)
+          end,
+          before_init = function(_, config)
+            -- Mutated in place: the client already holds a reference to this table, so
+            -- reassigning config.settings here would be discarded.
+            config.settings.python.pythonPath = resolve_python_path(config.root_dir)
+          end,
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -239,18 +279,10 @@ return {
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- Using the config recommended in the Deno docs here: https://docs.deno.com/runtime/getting_started/setup_your_environment/#kickstart.nvim-and-mason-lsp
-        ts_ls = {
-          root_dir = require('lspconfig').util.root_pattern { 'package.json', 'tsconfig.json' },
-          single_file_support = false,
-          settings = {},
-        },
+        -- nvim-lspconfig's root_dir for ts_ls already skips Deno projects, so the two don't overlap.
+        ts_ls = {},
         jsonls = {},
-        denols = {
-          root_dir = require('lspconfig').util.root_pattern { 'deno.json', 'deno.jsonc' },
-          single_file_support = false,
-          settings = {},
-        },
+        denols = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -287,19 +319,16 @@ return {
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      -- Registered before mason-lspconfig runs, because its auto-enable can start a client for the
+      -- already-open buffer immediately and would otherwise miss these overrides.
+      vim.lsp.config('*', { capabilities = capabilities })
+      for server_name, server in pairs(servers) do
+        vim.lsp.config(server_name, server)
+      end
+
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
       }
     end,
   },
